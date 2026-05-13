@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+requests
+python-dotenv
+pymupdf
+langchain
+langchain-groq
+langchain-openai
