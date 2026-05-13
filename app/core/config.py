@@ -55,6 +55,17 @@ def _default_cors_origins() -> list[str]:
     ]
 
 
+def _listen_host() -> str:
+    explicit = os.getenv("API_HOST")
+    if explicit is not None and explicit.strip():
+        return explicit.strip()
+    return "0.0.0.0" if os.getenv("PORT") else "127.0.0.1"
+
+
+def _listen_port() -> int:
+    return int(os.getenv("PORT") or os.getenv("API_PORT") or "8001")
+
+
 @lru_cache
 def get_settings() -> Settings:
     cors_origins = os.getenv("CORS_ORIGINS")
@@ -70,8 +81,8 @@ def get_settings() -> Settings:
         groq_structuring_model=os.getenv(
             "GROQ_STRUCTURING_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct"
         ),
-        api_host=os.getenv("API_HOST", "127.0.0.1"),
-        api_port=int(os.getenv("API_PORT", "8001")),
+        api_host=_listen_host(),
+        api_port=_listen_port(),
         request_timeout_seconds=int(os.getenv("REQUEST_TIMEOUT_SECONDS", "180")),
         cors_origins=(
             [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
