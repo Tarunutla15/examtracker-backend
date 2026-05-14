@@ -44,18 +44,19 @@ EXAM_NAME: <value or Not found>
 TEST_DATE: <value or Not found>
 
 SUMMARY_TABLE:
-SUMMARY_HEADER|Module Name|Questions|Answered|Not Answered|Review|Mark For Review|Not Visited|Time Spent
-SUMMARY_ROW|<module>|<questions>|<answered>|<not answered>|<review>|<mark for review>|<not visited>|<time>
+SUMMARY_HEADER|Module Name|<copy every other summary column header from the PDF exactly, left-to-right, pipe-separated>
+SUMMARY_ROW|<module>|<cell values in the same order as SUMMARY_HEADER, one pipe-separated field per column after Module Name>
 SUMMARY_ROW|...
 
 RESULT_TABLE:
-RESULT_HEADER|Module Name|Correct|Wrong|Correct Marks|Wrong Marks|Total Marks|Accuracy Percentage
-RESULT_ROW|<module>|<correct>|<wrong>|<correct marks>|<wrong marks>|<total marks>|<accuracy percentage>
+RESULT_HEADER|Module Name|<copy every other result column header from the PDF exactly, left-to-right, pipe-separated>
+RESULT_ROW|<module>|<cell values in the same order as RESULT_HEADER, one pipe-separated field per column after Module Name>
 RESULT_ROW|...
 
 If a total row is visible, include it too using SUMMARY_ROW or RESULT_ROW with module name Total.
 
 EXTRACTION RULES:
+- The first column is always the module/section name. Every remaining column MUST use the PDF's real header text (spelling and order), not a guessed template — different exams rename and reorder columns.
 - Keep one row per line.
 - Preserve visible column order.
 - Use the actual visible row values from the PDF.

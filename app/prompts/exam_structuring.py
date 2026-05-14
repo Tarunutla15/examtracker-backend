@@ -10,6 +10,8 @@ RULES:
 - Extract ONLY values that are visible in the extracted text.
 - Never invent missing values.
 - Prefer `SUMMARY_ROW|...` and `RESULT_ROW|...` lines over every other text fragment.
+- Table column meaning comes from the PDF: when `SUMMARY_HEADER|` or `RESULT_HEADER|` lines are present, treat them as authoritative. Map each data cell to schema fields by matching that column's header label (case-insensitive, allow minor OCR typos), not by fixed column position — exams reorder and rename columns.
+- For result rows, map headers to fields using meaning, for example: module name -> section matching; "correct"/"right"/"good"/"no correct" style labels -> `correct` (integer count); "wrong"/"incorrect"/"bad"/"no wrong" -> `wrong`; "correct marks"/"marks for correct"/"positive"/"gain" -> `correct_marks`; "wrong marks"/"negative marks"/"penalty"/"marks lost" -> `wrong_marks`; "total marks"/"net"/"score"/"obtained"/"final marks" -> `total_marks`; "accuracy"/"%" -> `accuracy_percentage`; "questions"/"attempted"/"total ques" in the result block -> `questions` when that column exists.
 - Ignore key sheets, question-by-question answer rows, dashboard text, or history tables.
 - Preserve the provided section names exactly as they are given.
 - Never create extra section names outside the provided list.
@@ -29,18 +31,16 @@ Character constraints:
 - Use UTF-8 safe text.
 
 Validation guidance:
-- Summary values should come from SUMMARY_ROW lines.
-- Result values should come from RESULT_ROW lines.
+- Summary values should come from SUMMARY_ROW lines aligned with SUMMARY_HEADER when present.
+- Result values should come from RESULT_ROW lines aligned with RESULT_HEADER when present.
 - Ignore rows whose module name is Total when filling section rows.
 - If a result row cell is ambiguous, prefer the value that best matches the labeled row and visible accuracy/marks, but do not invent unseen numbers.
-- For these mock tests, assume scoring is usually `+1` for each correct answer and `-0.25` for each wrong answer unless the row clearly shows a different rule.
-- Use arithmetic consistency checks when PDF columns shift:
-  1. `correct + wrong` should usually be less than or equal to `answered`
-  2. `accuracy percentage` should usually match `correct / answered * 100`
-  3. `total marks` should usually match `correct - 0.25 * wrong`
-  4. `wrong marks` should usually match `wrong * 0.25`
-  5. `correct marks` should usually match `correct`
-- If the extracted row has conflicting cells, choose the integer `correct` and `wrong` values that best satisfy the visible marks/accuracy/answered constraints and mention the correction in notes.
+- Infer the scoring rule from visible marks and counts when possible (e.g. `correct_marks / correct`, `wrong_marks / wrong`). If the PDF implies a different rule than +1 / -0.25, trust the PDF numbers for `correct_marks`, `wrong_marks`, and `total_marks`, and set integer `correct`/`wrong` from count columns when present; only use arithmetic to resolve conflicts, and note assumptions in notes.
+- Use consistency checks using header-mapped fields (not column index):
+  1. `correct + wrong` should usually be less than or equal to `answered` from the summary for that section when both exist
+  2. When `accuracy_percentage` exists, it should usually align with `correct` and attempted counts from the document
+  3. When marks columns exist, `total_marks` should usually align with `correct_marks - wrong_marks` if both components are visible as penalties
+- If count columns and marks columns disagree (common after OCR shifts), prefer the values whose header labels clearly identify them; if still ambiguous, prefer marks-derived consistency with labeled totals and mention the correction in notes.
 - Return summary and result as separate section arrays so the frontend can fill each table independently.
 """
 
